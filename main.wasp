@@ -1,0 +1,41 @@
+app TheGPTGods {
+  wasp: {
+    version: "^0.13.0"
+  },
+  title: "TheGPTGods",
+  client: {
+    rootComponent: import { Layout } from "@src/Layout.jsx"
+  },
+  db: {
+    prisma: {
+      clientPreviewFeatures: ["extendedWhereUnique"]
+    }
+  },
+  auth: {
+    userEntity: User,
+    methods: {
+      usernameAndPassword: {}
+    },
+    onAuthFailedRedirectTo: "/login",
+    onAuthSucceededRedirectTo: "/"
+  },
+  entities: [
+    { entityName: "User", entityBodyPsl: "  id         Int         @id @default(autoincrement())\n  projects   Project[]\n  skills     Skill[]\n  attributes Attribute[]" },
+    { entityName: "Project", entityBodyPsl: "  id          Int    @id @default(autoincrement())\n  title       String\n  description String\n  user        User   @relation(fields: [userId], references: [id])\n  userId      Int" },
+    { entityName: "Skill", entityBodyPsl: "  id     Int    @id @default(autoincrement())\n  name   String\n  user   User   @relation(fields: [userId], references: [id])\n  userId Int" },
+    { entityName: "Attribute", entityBodyPsl: "  id     Int    @id @default(autoincrement())\n  name   String\n  user   User   @relation(fields: [userId], references: [id])\n  userId Int" }
+  ],
+  queries: [
+    { opFnPath: "@src/queries.js", opName: "getUserData", opDesc: "Checks that user is authenticated, and if so, fetches and returns their data, including projects, skills, and attributes. Throws HttpError(400) if user is not authenticated. Works with entities User, Project, Skill, and Attribute." }
+  ],
+  pages: [
+    { routeName: "DashboardRoute", componentPath: "@src/pages/Dashboard.jsx", routePath: "/", pageName: "DashboardPage", pageDesc: "Main environment for the user. Displays user data, including projects, skills and attributes. Provides options for creating new projects, skills and attributes. Uses getUserData query and createProject, createSkill, createAttribute actions." },
+    { routeName: "TrainingRoute", componentPath: "@src/pages/Training.jsx", routePath: "/training", pageName: "TrainingPage", pageDesc: "Environment for training models. Allows the user to select a model and start training. Displays updates on the training process. Uses getUserData query." },
+    { routeName: "TestingRoute", componentPath: "@src/pages/Testing.jsx", routePath: "/testing", pageName: "TestingPage", pageDesc: "Environment for testing models. Allows the user to select a model and start testing. Displays results of the test. Uses getUserData query." }
+  ],
+  actions: [
+    { opFnPath: "@src/actions.js", opName: "createProject", opDesc: "Checks that user is authenticated and if so, creates new Project belonging to them. Takes title and description as arguments. Returns created Project. Works with entity Project." },
+    { opFnPath: "@src/actions.js", opName: "createSkill", opDesc: "Checks that user is authenticated and if so, creates new Skill belonging to them. Takes name as an argument. Returns created Skill. Works with entity Skill." },
+    { opFnPath: "@src/actions.js", opName: "createAttribute", opDesc: "Checks that user is authenticated and if so, creates new Attribute belonging to them. Takes name as an argument. Returns created Attribute. Works with entity Attribute." }
+  ]
+}
